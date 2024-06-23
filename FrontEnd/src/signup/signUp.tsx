@@ -1,29 +1,18 @@
 import { IonButton, IonContent, IonHeader, IonInput, IonText } from "@ionic/react";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth"
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore, doc, setDoc } from "firebase/firestore";
 import { useState } from "react";
-import { doc, setDoc } from "firebase/firestore";
 import { useHistory } from "react-router-dom";
-
-const firebaseConfig = {
-    apiKey: "AIzaSyB7GnC4ffCPkTW7kGhedZMAX5_LSnvoUpk",
-    authDomain: "punch-clock-cd580.firebaseapp.com",
-    databaseURL: "https://punch-clock-cd580-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "punch-clock-cd580",
-    storageBucket: "punch-clock-cd580.appspot.com",
-    messagingSenderId: "392166204571",
-    appId: "1:392166204571:web:b4f05b0a4fbe9c1782123e",
-    measurementId: "G-ELMWFN42X1"
-};
+import firebaseConfig from "../firebaseConfig";
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
 
-
 function SignUp() {
+    const [fullName, setFullName] = useState('')
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const history = useHistory();
@@ -39,6 +28,7 @@ function SignUp() {
             await setDoc(doc(db, 'Users', user.uid), {
                 email: user.email,
                 createdAt: new Date(),
+                name: fullName,
             })
 
             history.push('/punchclock')
@@ -47,13 +37,11 @@ function SignUp() {
         }
     }
 
-
-
     return (
         <IonContent>
             <IonHeader>Skapa konto</IonHeader>
-
-            <IonInput placeholder="Användarnamn" onIonChange={(e) => setEmail(e.detail.value!)}></IonInput>
+            <IonInput placeholder="Användarnamn" onIonChange={(e) => setFullName(e.detail.value!)}></IonInput>
+            <IonInput placeholder="Email" onIonChange={(e) => setEmail(e.detail.value!)}></IonInput>
             <IonInput placeholder="Lösenord" type="password" onIonChange={(e) => setPassword(e.detail.value!)}></IonInput>
             <IonButton onClick={handleSignUp}>Skapa konto</IonButton>
             {error && <IonText>{error}</IonText>}

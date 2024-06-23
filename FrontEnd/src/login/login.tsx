@@ -21,7 +21,7 @@ function Login() {
         }
         console.log(email, password)
     }
-    console.log(email, password)
+    console.log(email, password, auth.name, auth.currentUser)
     return (
         <IonContent>
             <IonHeader>

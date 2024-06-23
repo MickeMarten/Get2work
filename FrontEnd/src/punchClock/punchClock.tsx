@@ -3,43 +3,33 @@ import { IonCardHeader, IonCardSubtitle, IonCardTitle, IonChip, IonCol, IonConte
 import { IonApp, IonRouterOutlet, IonCard, IonCardContent } from '@ionic/react';
 import { useEffect } from 'react';
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, addDoc, getDocs, doc } from "firebase/firestore";
+import { getFirestore, collection, addDoc, getDocs, doc, arrayUnion, updateDoc } from "firebase/firestore";
 import { useState } from "react";
 import { DateTime, Duration } from "luxon";
 import { useHistory } from "react-router-dom";
 import { getAuth, signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { IonButton, IonDatetime } from '@ionic/react';
+import firebaseConfig from '../firebaseConfig';
+import { useAuth } from '../auth/authContext';
 
 interface Workday {
-    workHours: number,
-    workSeconds: number,
+    hoursWorked: number,
+    minutesWorked: number,
     date: string,
 }
-
-const firebaseConfig = {
-    apiKey: "AIzaSyB7GnC4ffCPkTW7kGhedZMAX5_LSnvoUpk",
-    authDomain: "punch-clock-cd580.firebaseapp.com",
-    databaseURL: "https://punch-clock-cd580-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "punch-clock-cd580",
-    storageBucket: "punch-clock-cd580.appspot.com",
-    messagingSenderId: "392166204571",
-    appId: "1:392166204571:web:b4f05b0a4fbe9c1782123e",
-    measurementId: "G-ELMWFN42X1"
-};
-
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-
-
 const auth = getAuth();
-console.log()
+console.log(auth.name, auth.currentUser)
 
 
 function PunchClock() {
+    const { currentUser } = useAuth()
     const [startWork, setStartWork] = useState(0)
     const [toggleBtn, setToggleBtn] = useState(false)
     const [workData, setWorkData] = useState([])
     const today = DateTime.now().toLocaleString();
+    const [workedTime, setWorkedTime] = useState({ hours: 0, minutes: 0 });
     const history = useHistory();
 
     async function logOut() {
@@ -51,36 +41,49 @@ function PunchClock() {
 
 
     function startBtn() {
-        const startTimer = DateTime.now().second
+        const startTimer = DateTime.now()
         setStartWork(startTimer);
         setToggleBtn(true)
     }
 
-    // function stopBtn() {
-    //   const stopWork = DateTime.now().second;
-    //   const workTime = Duration.
-    //   const hoursWorked = workTime.minus(stopWork)
+    const stopBtn = async () => {
 
+        const stopWork = DateTime.now();
+        const diff = stopWork.diff(startWork, ['hours', 'minutes']);
+        const hoursWorked = Math.floor(diff.as('hours'));
+        const minutesWorked = Math.floor(diff.as('minutes')) % 60;
+        const today = stopWork.toISODate();
 
-    //   setToggleBtn(false);
+        try {
+            const userRef = doc(db, 'Users', currentUser.uid);
 
-    //   const docRef = addDoc(collection(db, 'clockIn'), {
+            await updateDoc(userRef, {
+                punchClock: arrayUnion({
+                    hoursWorked,
+                    minutesWorked,
+                    date: today,
+                })
+            });
 
-    //     workHours: hoursWorked,
-    //     date: today
-    //   });
+            setWorkedTime({ hours: hoursWorked, minutes: minutesWorked });
+            setToggleBtn(false);
+        } catch (e) {
+            console.error("Error adding document: ", e);
+        }
 
-    // }
+    };
 
     useEffect(() => {
         async function getData() {
-            const dataList: Workday[] = []
 
-            const querySnapshot = await getDocs(collection(db, 'clockIn'));
+            const dataList: Workday[] = [];
+
+            const querySnapshot = await getDocs(collection(db, 'Users', currentUser.uid, 'punchClock'));
             querySnapshot.forEach((doc) => {
                 dataList.push(doc.data())
             })
             setWorkData(dataList)
+            console.log(dataList, 'workdata', workData)
 
         }
         getData()
@@ -92,27 +95,35 @@ function PunchClock() {
         <IonApp>
             <IonHeader >
                 <IonToolbar  >
-                    <IonText>Välkommen till jobbet {auth.currentUser.email}. Idag är det {today}</IonText>
+                    <IonText>Välkommen till jobbet. Idag är det {today}</IonText>
                     <IonButton onClick={startBtn} style={{ display: toggleBtn ? 'none' : '' }}>Börja jobba</IonButton>
+                    <IonButton onClick={stopBtn} style={{ display: toggleBtn ? '' : 'none' }}>Sluta jobba</IonButton>
                     <IonButton onClick={logOut}>Logga ut</IonButton>
-                    {/* <IonButton onClick={stopBtn} style={{ display: toggleBtn ? '' : 'none' }}>Sluta jobba</IonButton> */}
+                    <IonButton onClick={() => { history.push('/todo') }}>Todo</IonButton>
 
                     <IonSearchbar color="light" placeholder='Sök här' slot=''></IonSearchbar>
                 </IonToolbar>
+                <div>
+                    {currentUser ? (
+                        <p>Inloggad som: {currentUser.email}</p>
+                    ) : (
+                        <p>Du är inte inloggad</p>
+                    )}
+                </div>
             </IonHeader>
 
             <IonContent>
                 <IonGrid>
                     <IonRow>
 
-                        {workData.map((item) => (
-                            <IonCard>
+                        {workData.map((item, index) => (
+                            <IonCard key={index}>
                                 <IonCardContent>
                                     <IonCol>
                                         <IonCardSubtitle>{item.date}</IonCardSubtitle>
                                     </IonCol>
                                     <IonCol>
-                                        <IonCardSubtitle>{item.workHours} timmar och  {item.workSeconds} minuter arbetade</IonCardSubtitle>
+                                        <IonCardSubtitle>{item.hoursWorked} timmar och  {item.minutesWorked} minuter arbetade</IonCardSubtitle>
                                     </IonCol>
 
                                 </IonCardContent>

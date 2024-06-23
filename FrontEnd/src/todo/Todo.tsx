@@ -3,12 +3,19 @@ import '@ionic/react/css/core.css';
 import { useState, useEffect } from 'react';
 import { IonApp, IonHeader, IonToolbar, IonTitle, IonContent, IonInput, IonButton, IonList, IonItem, IonLabel, IonIcon, IonText } from '@ionic/react';
 import { trashBinOutline } from 'ionicons/icons';
+import firebaseConfig from '../firebaseConfig';
+import { useAuth } from '../auth/authContext';
+import { useHistory } from "react-router-dom";
+
+
 
 function Todo() {
     const [task, setTask] = useState<string>('')
     const [taskList, setTaskList] = useState<[]>([])
     const [taskCount, setTaskCount] = useState<number>(0)
     const [warningText, setWarningText] = useState<string>('')
+    const { currentUser } = useAuth();
+    const history = useHistory()
     console.log(task, 'task')
 
     function addTask() {
@@ -41,7 +48,14 @@ function Todo() {
             <IonHeader>
                 <IonToolbar>
                     <IonTitle>Todo</IonTitle>
-
+                    <div>
+                        {currentUser ? (
+                            <p>Inloggad som: {currentUser.email}</p>
+                        ) : (
+                            <p>Du är inte inloggad</p>
+                        )}
+                    </div>
+                    <IonButton onClick={() => { history.push('/punchclock') }}>PunchClock</IonButton>
                 </IonToolbar>
             </IonHeader>
             <IonContent>
