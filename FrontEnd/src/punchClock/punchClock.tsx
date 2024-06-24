@@ -1,14 +1,14 @@
 import '@ionic/react/css/core.css';
-import { IonCardHeader, IonCardSubtitle, IonCardTitle, IonChip, IonCol, IonContent, IonGrid, IonHeader, IonIcon, IonImg, IonInput, IonProgressBar, IonRow, IonSearchbar, IonText, IonToolbar, setupIonicReact } from '@ionic/react';
-import { IonApp, IonRouterOutlet, IonCard, IonCardContent } from '@ionic/react';
+import { IonCardSubtitle, IonCol, IonContent, IonGrid, IonHeader, IonRow, IonSearchbar, IonText, IonToolbar } from '@ionic/react';
+import { IonApp, IonCard, IonCardContent } from '@ionic/react';
 import { useEffect } from 'react';
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, addDoc, getDocs, doc, arrayUnion, updateDoc, deleteDoc, deleteField, getDoc, Timestamp, } from "firebase/firestore";
+import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, getDoc, } from "firebase/firestore";
 import { useState } from "react";
-import { DateTime, Duration } from "luxon";
+import { DateTime } from "luxon";
 import { useHistory } from "react-router-dom";
-import { getAuth, signInWithEmailAndPassword, signOut } from "firebase/auth";
-import { IonButton, IonDatetime } from '@ionic/react';
+import { getAuth, signOut } from "firebase/auth";
+import { IonButton, } from '@ionic/react';
 import firebaseConfig from '../firebaseConfig';
 import { useAuth } from '../auth/authContext';
 
@@ -62,7 +62,6 @@ function PunchClock() {
                 hoursWorked: data.hoursWorked,
                 minutesWorked: data.minutesWorked,
             }
-
 
         });
         console.log(workDataList)

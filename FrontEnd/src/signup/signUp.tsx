@@ -12,11 +12,11 @@ const auth = getAuth(app);
 
 
 function SignUp() {
-    const [fullName, setFullName] = useState('')
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
+    const [fullName, setFullName] = useState<string>('')
+    const [email, setEmail] = useState<string>('')
+    const [password, setPassword] = useState<string>('')
     const history = useHistory();
-    const [error, setError] = useState('')
+    const [error, setError] = useState<string>('')
 
     const handleSignUp = async () => {
         try {
@@ -34,6 +34,7 @@ function SignUp() {
             history.push('/punchclock')
         } catch (error) {
             setError('för kort lösenord eller något idk.')
+            console.log(error, 'error')
         }
     }
 
