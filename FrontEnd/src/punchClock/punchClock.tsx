@@ -3,7 +3,7 @@ import { IonCardHeader, IonCardSubtitle, IonCardTitle, IonChip, IonCol, IonConte
 import { IonApp, IonRouterOutlet, IonCard, IonCardContent } from '@ionic/react';
 import { useEffect } from 'react';
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, addDoc, getDocs, doc, arrayUnion, updateDoc, deleteDoc, deleteField, getDoc } from "firebase/firestore";
+import { getFirestore, collection, addDoc, getDocs, doc, arrayUnion, updateDoc, deleteDoc, deleteField, getDoc, Timestamp, } from "firebase/firestore";
 import { useState } from "react";
 import { DateTime, Duration } from "luxon";
 import { useHistory } from "react-router-dom";
@@ -14,10 +14,9 @@ import { useAuth } from '../auth/authContext';
 
 
 interface IUser {
-    createdAt: string,
+    createdAt: Date,
     email: string,
-    name: string,
-    punchClock: IWorkday[],
+    name: string | undefined,
 }
 interface IWorkday {
     id: string,
@@ -35,29 +34,48 @@ console.log(auth.name, auth.currentUser)
 
 function PunchClock() {
     const { currentUser } = useAuth()
-    const [startWork, setStartWork] = useState<number>(0)
+    const [userInfo, setUserInfo] = useState<IUser | undefined>(undefined)
+    const [startWork, setStartWork] = useState<DateTime | null>(null)
     const [toggleBtn, setToggleBtn] = useState<boolean>(false)
     const [workData, setWorkData] = useState<IWorkday[]>([])
     const today = DateTime.now().toLocaleString();
     const [workedTime, setWorkedTime] = useState<{ hours: number, minutes: number }>({ hours: 0, minutes: 0 });
     const history = useHistory();
 
-    async function getData() {
-        if (!currentUser) {
-            console.error('No current user');
-            return;
-        }
-        const userRef = doc(db, 'Users', currentUser.uid)
-        const userDoc = await getDoc(userRef);
+    async function getUserInfo() {
+        const userRef = doc(db, 'Users', currentUser.uid);
+        const userDoc = await getDoc(userRef)
         const userData = userDoc.data() as IUser;
-        setWorkData(userData.punchClock);
+        setUserInfo(userData)
+
+    }
+
+    async function getWorkData() {
+
+        const workDataRef = collection(db, 'Users', currentUser.uid, 'workData');
+        const workDataSnaphot = await getDocs(workDataRef)
+        const workDataList: IWorkday[] = workDataSnaphot.docs.map(doc => {
+            const data = doc.data()
+            return {
+                id: doc.id,
+                date: data.date,
+                hoursWorked: data.hoursWorked,
+                minutesWorked: data.minutesWorked,
+            }
+
+
+        });
+        console.log(workDataList)
+        setWorkData(workDataList);
     }
 
 
     useEffect(() => {
         if (currentUser) {
-            getData();
+            getWorkData();
+            getUserInfo();
         }
+
     }, []);
 
     async function handleLogout() {
@@ -72,61 +90,57 @@ function PunchClock() {
     }
 
     const handleStopBtn = async () => {
-        const stopWork = DateTime.now();
-        const duration = stopWork.diff(startWork);
-        const hoursWorked = Math.floor(duration.as('hours'));
-        const minutesWorked = Math.floor(duration.as('minutes')) % 60;
-        const today = stopWork.toISODate();
+        if (!startWork) {
+            console.log('tiden startades inte')
+        } else {
+            const stopWork = DateTime.now();
+            const duration = stopWork.diff(startWork);
+            const hoursWorked = Math.floor(duration.as('hours'));
+            const minutesWorked = Math.floor(duration.as('minutes')) % 60;
+            const today = stopWork.toISODate();
 
-        try {
-            const userRef = doc(db, 'Users', currentUser.uid);
-
-            await updateDoc(userRef, {
-                punchClock: arrayUnion({
-                    id: `${Date.now()}`,
-                    hoursWorked,
-                    minutesWorked,
+            try {
+                const punchClockRef = collection(db, 'Users', currentUser.uid, 'workData');
+                const punchClockEntry = await addDoc(punchClockRef, {
                     date: today,
+                    hoursWorked: hoursWorked,
+                    minutesWorked: minutesWorked,
                 })
-            });
 
-            setWorkedTime({ hours: hoursWorked, minutes: minutesWorked });
-            setToggleBtn(false);
-        } catch (e) {
-            console.error("Error adding document: ", e);
+
+
+                setWorkedTime({ hours: hoursWorked, minutes: minutesWorked });
+                setToggleBtn(false);
+            } catch (e) {
+                console.error("Error adding document: ", e);
+            }
+
+            getWorkData();
         }
-
-        getData();
     };
 
     async function handleDelete(id: string) {
         try {
-            await deleteDoc(doc(db, 'Users', currentUser.uid, 'PunchClock', id));
+            await deleteDoc(doc(db, 'Users', currentUser.uid, 'workData', id));
 
         } catch (e) {
             console.error("Error deleting document: ", e);
         }
-        getData();
+        getWorkData();
     }
 
     return (
         <IonApp>
             <IonHeader>
                 <IonToolbar>
-                    <IonText>Välkommen till jobbet. Idag är det {today}</IonText>
+                    <IonText>Välkommen till jobbet {userInfo?.name}. Idag är det {today}</IonText>
                     <IonButton onClick={handleStartBtn} style={{ display: toggleBtn ? 'none' : '' }}>Börja jobba</IonButton>
                     <IonButton onClick={handleStopBtn} style={{ display: toggleBtn ? '' : 'none' }}>Sluta jobba</IonButton>
                     <IonButton onClick={handleLogout}>Logga ut</IonButton>
                     <IonButton onClick={() => { history.push('/todo') }}>Todo</IonButton>
                     <IonSearchbar color="light" placeholder='Sök här'></IonSearchbar>
                 </IonToolbar>
-                <div>
-                    {currentUser ? (
-                        <p>Inloggad som: {currentUser.email}</p>
-                    ) : (
-                        <p>Du är inte inloggad</p>
-                    )}
-                </div>
+
             </IonHeader>
 
             <IonContent>
