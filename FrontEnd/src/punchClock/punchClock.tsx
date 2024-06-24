@@ -3,7 +3,7 @@ import { IonCardHeader, IonCardSubtitle, IonCardTitle, IonChip, IonCol, IonConte
 import { IonApp, IonRouterOutlet, IonCard, IonCardContent } from '@ionic/react';
 import { useEffect } from 'react';
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, addDoc, getDocs, doc, arrayUnion, updateDoc } from "firebase/firestore";
+import { getFirestore, collection, addDoc, getDocs, doc, arrayUnion, updateDoc, deleteDoc, deleteField, getDoc } from "firebase/firestore";
 import { useState } from "react";
 import { DateTime, Duration } from "luxon";
 import { useHistory } from "react-router-dom";
@@ -12,11 +12,21 @@ import { IonButton, IonDatetime } from '@ionic/react';
 import firebaseConfig from '../firebaseConfig';
 import { useAuth } from '../auth/authContext';
 
-interface Workday {
+
+interface IUser {
+    createdAt: string,
+    email: string,
+    name: string,
+    punchClock: IWorkday[],
+}
+interface IWorkday {
+    id: string,
+    date: string,
     hoursWorked: number,
     minutesWorked: number,
-    date: string,
+
 }
+
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth();
@@ -25,33 +35,47 @@ console.log(auth.name, auth.currentUser)
 
 function PunchClock() {
     const { currentUser } = useAuth()
-    const [startWork, setStartWork] = useState(0)
-    const [toggleBtn, setToggleBtn] = useState(false)
-    const [workData, setWorkData] = useState([])
+    const [startWork, setStartWork] = useState<number>(0)
+    const [toggleBtn, setToggleBtn] = useState<boolean>(false)
+    const [workData, setWorkData] = useState<IWorkday[]>([])
     const today = DateTime.now().toLocaleString();
-    const [workedTime, setWorkedTime] = useState({ hours: 0, minutes: 0 });
+    const [workedTime, setWorkedTime] = useState<{ hours: number, minutes: number }>({ hours: 0, minutes: 0 });
     const history = useHistory();
 
-    async function logOut() {
-        const auth = getAuth()
-        signOut(auth)
-        history.push('/start')
-
+    async function getData() {
+        if (!currentUser) {
+            console.error('No current user');
+            return;
+        }
+        const userRef = doc(db, 'Users', currentUser.uid)
+        const userDoc = await getDoc(userRef);
+        const userData = userDoc.data() as IUser;
+        setWorkData(userData.punchClock);
     }
 
 
-    function startBtn() {
-        const startTimer = DateTime.now()
+    useEffect(() => {
+        if (currentUser) {
+            getData();
+        }
+    }, []);
+
+    async function handleLogout() {
+        signOut(auth);
+        history.push('/start');
+    }
+
+    function handleStartBtn() {
+        const startTimer = DateTime.now();
         setStartWork(startTimer);
-        setToggleBtn(true)
+        setToggleBtn(true);
     }
 
-    const stopBtn = async () => {
-
+    const handleStopBtn = async () => {
         const stopWork = DateTime.now();
-        const diff = stopWork.diff(startWork, ['hours', 'minutes']);
-        const hoursWorked = Math.floor(diff.as('hours'));
-        const minutesWorked = Math.floor(diff.as('minutes')) % 60;
+        const duration = stopWork.diff(startWork);
+        const hoursWorked = Math.floor(duration.as('hours'));
+        const minutesWorked = Math.floor(duration.as('minutes')) % 60;
         const today = stopWork.toISODate();
 
         try {
@@ -59,6 +83,7 @@ function PunchClock() {
 
             await updateDoc(userRef, {
                 punchClock: arrayUnion({
+                    id: `${Date.now()}`,
                     hoursWorked,
                     minutesWorked,
                     date: today,
@@ -71,37 +96,29 @@ function PunchClock() {
             console.error("Error adding document: ", e);
         }
 
+        getData();
     };
 
-    useEffect(() => {
-        async function getData() {
+    async function handleDelete(id: string) {
+        try {
+            await deleteDoc(doc(db, 'Users', currentUser.uid, 'PunchClock', id));
 
-            const dataList: Workday[] = [];
-
-            const querySnapshot = await getDocs(collection(db, 'Users', currentUser.uid, 'punchClock'));
-            querySnapshot.forEach((doc) => {
-                dataList.push(doc.data())
-            })
-            setWorkData(dataList)
-            console.log(dataList, 'workdata', workData)
-
+        } catch (e) {
+            console.error("Error deleting document: ", e);
         }
-        getData()
-
-    }, [])
-
+        getData();
+    }
 
     return (
         <IonApp>
-            <IonHeader >
-                <IonToolbar  >
+            <IonHeader>
+                <IonToolbar>
                     <IonText>Välkommen till jobbet. Idag är det {today}</IonText>
-                    <IonButton onClick={startBtn} style={{ display: toggleBtn ? 'none' : '' }}>Börja jobba</IonButton>
-                    <IonButton onClick={stopBtn} style={{ display: toggleBtn ? '' : 'none' }}>Sluta jobba</IonButton>
-                    <IonButton onClick={logOut}>Logga ut</IonButton>
+                    <IonButton onClick={handleStartBtn} style={{ display: toggleBtn ? 'none' : '' }}>Börja jobba</IonButton>
+                    <IonButton onClick={handleStopBtn} style={{ display: toggleBtn ? '' : 'none' }}>Sluta jobba</IonButton>
+                    <IonButton onClick={handleLogout}>Logga ut</IonButton>
                     <IonButton onClick={() => { history.push('/todo') }}>Todo</IonButton>
-
-                    <IonSearchbar color="light" placeholder='Sök här' slot=''></IonSearchbar>
+                    <IonSearchbar color="light" placeholder='Sök här'></IonSearchbar>
                 </IonToolbar>
                 <div>
                     {currentUser ? (
@@ -115,7 +132,6 @@ function PunchClock() {
             <IonContent>
                 <IonGrid>
                     <IonRow>
-
                         {workData.map((item, index) => (
                             <IonCard key={index}>
                                 <IonCardContent>
@@ -123,22 +139,19 @@ function PunchClock() {
                                         <IonCardSubtitle>{item.date}</IonCardSubtitle>
                                     </IonCol>
                                     <IonCol>
-                                        <IonCardSubtitle>{item.hoursWorked} timmar och  {item.minutesWorked} minuter arbetade</IonCardSubtitle>
+                                        <IonCardSubtitle>{item.hoursWorked} timmar och {item.minutesWorked} minuter arbetade</IonCardSubtitle>
                                     </IonCol>
-
+                                    <IonCol>
+                                        <IonButton onClick={() => handleDelete(item.id)}>Ta bort</IonButton>
+                                    </IonCol>
                                 </IonCardContent>
                             </IonCard>
-
                         ))}
                     </IonRow>
                 </IonGrid>
             </IonContent>
-
-
-        </IonApp >
-
-
-    )
+        </IonApp>
+    );
 }
 
 export default PunchClock;
