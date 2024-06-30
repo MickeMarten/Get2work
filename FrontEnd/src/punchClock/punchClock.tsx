@@ -1,5 +1,5 @@
 import '@ionic/react/css/core.css';
-import { IonCardSubtitle, IonCol, IonContent, IonGrid, IonHeader, IonRow, IonSearchbar, IonText, IonToolbar } from '@ionic/react';
+import { IonCardSubtitle, IonCol, IonContent, IonGrid, IonHeader, IonPicker, IonPickerColumn, IonRow, IonSearchbar, IonText, IonToolbar } from '@ionic/react';
 import { IonApp, IonCard, IonCardContent } from '@ionic/react';
 import { useEffect } from 'react';
 import { initializeApp } from "firebase/app";
@@ -11,20 +11,8 @@ import { getAuth, signOut } from "firebase/auth";
 import { IonButton, } from '@ionic/react';
 import firebaseConfig from '../firebaseConfig';
 import { useAuth } from '../auth/authContext';
-
-
-interface IUser {
-    createdAt: Date,
-    email: string,
-    name: string | undefined,
-}
-interface IWorkday {
-    id: string,
-    date: string,
-    hoursWorked: number,
-    minutesWorked: number,
-
-}
+import DropDownChange from '../Components/DropdownChange';
+import { IUser, IWorkday } from '../models/models';
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
@@ -37,6 +25,7 @@ function PunchClock() {
     const [userInfo, setUserInfo] = useState<IUser | undefined>(undefined)
     const [startWork, setStartWork] = useState<DateTime | null>(null)
     const [toggleBtn, setToggleBtn] = useState<boolean>(false)
+    const [toggleChangeBtn, setToggleChangeBtn] = useState<boolean>(false)
     const [workData, setWorkData] = useState<IWorkday[]>([])
     const today = DateTime.now().toLocaleString();
     const [workedTime, setWorkedTime] = useState<{ hours: number, minutes: number }>({ hours: 0, minutes: 0 });
@@ -145,8 +134,8 @@ function PunchClock() {
             <IonContent>
                 <IonGrid>
                     <IonRow>
-                        {workData.map((item, index) => (
-                            <IonCard key={index}>
+                        {workData.map((item) => (
+                            <IonCard key={item.id}>
                                 <IonCardContent>
                                     <IonCol>
                                         <IonCardSubtitle>{item.date}</IonCardSubtitle>
@@ -156,6 +145,11 @@ function PunchClock() {
                                     </IonCol>
                                     <IonCol>
                                         <IonButton onClick={() => handleDelete(item.id)}>Ta bort</IonButton>
+                                        <IonButton onClick={() => { history.push('/todo') }}>Todo</IonButton>
+                                        <IonButton onClick={() => { toggleChangeBtn ? setToggleChangeBtn(false) : setToggleChangeBtn(true) }}>Ändra</IonButton>
+                                        <div className={toggleChangeBtn ? '' : 'hidden'}>
+                                            <DropDownChange></DropDownChange>
+                                        </div>
                                     </IonCol>
                                 </IonCardContent>
                             </IonCard>
