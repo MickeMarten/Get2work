@@ -1,7 +1,8 @@
-import { IonContent, IonInput, IonButton, IonHeader, IonToolbar, IonTitle, IonText } from "@ionic/react"
+import { IonRow, IonContent, IonInput, IonButton, IonHeader, IonToolbar, IonTitle, IonText, IonGrid, IonCol } from "@ionic/react"
 import { useHistory } from "react-router-dom";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { useState } from "react";
+import { Warning } from "postcss";
 
 function Login() {
     const history = useHistory();
@@ -24,21 +25,23 @@ function Login() {
     console.log(email, password, auth.name, auth.currentUser)
     return (
         <IonContent>
-            <IonHeader>
+            <IonHeader class="w-screen">
                 <IonToolbar>
                     <IonTitle>Välkommen till jobbet.</IonTitle>
                 </IonToolbar>
             </IonHeader>
             <IonInput
+
                 placeholder="Användarnamn"
                 onIonChange={(e) => setEmail(e.detail.value!)}
             />
             <IonInput
+
                 placeholder="Lösenord"
                 type="password"
                 onIonChange={(e) => setPassword(e.detail.value!)}
             />
-            {error && <IonText color="danger">{error}</IonText>}
+            {error && <IonText>{error}</IonText>}
             <IonButton onClick={handleLogin}>Logga in</IonButton>
             <IonButton onClick={() => { history.push('/signup') }}>Skapa konto</IonButton>
         </IonContent>

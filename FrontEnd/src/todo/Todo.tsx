@@ -4,10 +4,13 @@ import { useState, useEffect } from 'react';
 import { IonApp, IonHeader, IonToolbar, IonTitle, IonContent, IonInput, IonButton, IonList, IonItem, IonLabel, IonIcon, IonText } from '@ionic/react';
 import { trashBinOutline } from 'ionicons/icons';
 import firebaseConfig from '../firebaseConfig';
+import { initializeApp } from "firebase/app";
+import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, getDoc, } from "firebase/firestore";
 import { useAuth } from '../auth/authContext';
 import { useHistory } from "react-router-dom";
 
-
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
 function Todo() {
     const [task, setTask] = useState<string>('')
@@ -16,32 +19,46 @@ function Todo() {
     const [warningText, setWarningText] = useState<string>('')
     const { currentUser } = useAuth();
     const history = useHistory()
-    console.log(task, 'task')
 
-    function addTask() {
+    function handleSetTask(event: CustomEvent) {
+        const taskItem = event.detail.value;
+        setTask(taskItem)
+
+    }
+    useEffect(() => {
+        console.log(task)
+
+    }, [handleSetTask]);
+
+    async function getTasks() {
+
+
+    }
+
+    async function addTask() {
         if (task === '') {
             setWarningText('Du måste skriva något hallå.');
             setTimeout(() => {
                 setWarningText('');
             }, 2000);
             return;
+        } else {
+
+            const punchClockRef = collection(db, 'Users', currentUser.uid, 'Todo');
+            const punchClockEntry = await addDoc(punchClockRef, {
+                todo: task
+            })
         }
-
-        const tasks = {
-            task: task,
-            id: Date.now(),
-        }
-
-        taskList.push(tasks)
-
-        console.log(taskList)
-    }
-
-    function deleteTask(id) {
 
 
 
     }
+
+    // function deleteTask(id) {
+
+
+
+    // }
 
     return (
         <IonContent>
@@ -53,14 +70,15 @@ function Todo() {
                             <p>Inloggad som: {currentUser.email}</p>
                         ) : (
                             <p>Du är inte inloggad</p>
+
                         )}
                     </div>
                     <IonButton onClick={() => { history.push('/punchclock') }}>PunchClock</IonButton>
                 </IonToolbar>
             </IonHeader>
             <IonContent>
-                <IonInput placeholder='Uppgift' onIonChange={e => setTask(e.detail.value!)}></IonInput>
-                <IonButton onClick={addTask}>Lägg till</IonButton>
+                <IonInput placeholder='Uppgift' onIonChange={handleSetTask}></IonInput>
+                <IonButton onClick={() => addTask}>Lägg till</IonButton>
                 <IonLabel>{warningText}</IonLabel>
                 <IonList>
                     {taskList.map((item, index) => (

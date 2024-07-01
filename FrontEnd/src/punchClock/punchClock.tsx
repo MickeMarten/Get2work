@@ -95,8 +95,6 @@ function PunchClock() {
                     minutesWorked: minutesWorked,
                 })
 
-
-
                 setWorkedTime({ hours: hoursWorked, minutes: minutesWorked });
                 setToggleBtn(false);
             } catch (e) {
@@ -148,7 +146,7 @@ function PunchClock() {
                                         <IonButton onClick={() => { history.push('/todo') }}>Todo</IonButton>
                                         <IonButton onClick={() => { toggleChangeBtn ? setToggleChangeBtn(false) : setToggleChangeBtn(true) }}>Ändra</IonButton>
                                         <div className={toggleChangeBtn ? '' : 'hidden'}>
-                                            <DropDownChange></DropDownChange>
+                                            <DropDownChange currentUser={currentUser} dbRef={db} getWorkData={getWorkData}></DropDownChange>
                                         </div>
                                     </IonCol>
                                 </IonCardContent>

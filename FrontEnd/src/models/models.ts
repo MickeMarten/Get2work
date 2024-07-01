@@ -8,5 +8,4 @@ export interface IWorkday {
   date: string;
   hoursWorked: number;
   minutesWorked: number;
-  note: string | undefined;
 }

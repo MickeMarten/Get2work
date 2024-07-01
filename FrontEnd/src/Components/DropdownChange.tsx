@@ -1,40 +1,30 @@
-import { IonButton, IonPicker, IonPickerColumn, IonPickerColumnOption, IonText } from "@ionic/react";
+import { IonButton, IonPicker, IonPickerColumn, IonPickerColumnOption } from "@ionic/react";
 import { useState } from "react";
-import { initializeApp } from "firebase/app";
-import { getFirestore, collection, updateDoc, doc, getDocs } from "firebase/firestore";
-import { getAuth, signOut } from "firebase/auth";
-import firebaseConfig from "../firebaseConfig";
-import { useAuth } from '../auth/authContext';
-import { serverTimestamp, update } from "firebase/database";
-import { IWorkday } from "../models/models";
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth();
-function DropDownChange() {
+import { collection, updateDoc, doc, getDocs } from "firebase/firestore";
 
 
-  const [hourValue, setHourValue] = useState<number>(24)
-  const [minuteValue, setMinuteValue] = useState<number>(60)
-  const { currentUser } = useAuth()
+function DropDownChange({ currentUser, dbRef, getWorkData }: { currentUser: any, dbRef: any, getWorkData: any }) {
+
+
+  // const { currentUser } = useAuth()
   const [changedHours, setChangedHours] = useState<number>()
   const [changedMinutes, setChangedMinutes] = useState<number>(0)
 
   const hourValueList = []
   const minuteValueList = []
 
-  for (let i = 0; i < hourValue; i++) {
+  for (let i = 0; i < 24; i++) {
     hourValueList.push(
       <IonPickerColumnOption value={i} key={i}>{i} Timmar</IonPickerColumnOption>
     )
 
   }
-  for (let i = 0; i < minuteValue; i++) {
+  for (let i = 0; i < 60; i++) {
     minuteValueList.push(
       <IonPickerColumnOption value={i} key={i} class="">{i} Minuter</IonPickerColumnOption>
     )
 
   }
-
 
   function handleHourPicker(event: CustomEvent,) {
     const time = event.detail.value;
@@ -47,20 +37,20 @@ function DropDownChange() {
     console.log(time)
   };
 
-  async function workDataChange() {
-    const workDataCollectionRef = collection(db, 'Users', currentUser.uid, 'workData',);
+  async function handleWorkDataChange() {
+    const workDataCollectionRef = collection(dbRef, 'Users', currentUser.uid, 'workData',);
     const querySnapshot = await getDocs(workDataCollectionRef);
 
     querySnapshot.forEach(async (document) => {
       const docId = document.id
-      const workDataRef = doc(db, 'Users', currentUser.uid, 'workData', docId);
+      const workDataRef = doc(dbRef, 'Users', currentUser.uid, 'workData', docId);
 
       await updateDoc(workDataRef, {
         hoursWorked: changedHours,
         minutesWorked: changedMinutes,
       });
     })
-
+    getWorkData()
 
   }
   return (<>
@@ -72,7 +62,7 @@ function DropDownChange() {
         {minuteValueList}
       </IonPickerColumn>
     </IonPicker>
-    <IonButton onClick={workDataChange}>Ok</IonButton>
+    <IonButton onClick={handleWorkDataChange}>Ok</IonButton>
   </>)
 
 }
