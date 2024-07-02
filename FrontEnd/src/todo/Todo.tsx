@@ -20,20 +20,31 @@ function Todo() {
     const { currentUser } = useAuth();
     const history = useHistory()
 
-    function handleSetTask(event: CustomEvent) {
-        const taskItem = event.detail.value;
+    function handleSetTask(event: any) {
+        const taskItem = event.target.value;
         setTask(taskItem)
+        console.log('hallå', taskItem)
 
     }
-    useEffect(() => {
-        console.log(task)
-
-    }, [handleSetTask]);
 
     async function getTasks() {
-
-
+        const dbTodoRef = collection(db, 'Users', currentUser.uid, 'Todo')
+        const todoDataSnapshot = await getDocs(dbTodoRef)
+        const todoData = todoDataSnapshot.docs.map(doc => {
+            const data = doc.data()
+            return {
+                todo: data.todo,
+                id: doc.id
+            }
+        })
+        setTaskList(todoData)
+        console.log(todoData, taskList)
     }
+
+    useEffect(() => {
+        getTasks()
+    }, [])
+
 
     async function addTask() {
         if (task === '') {
@@ -46,19 +57,25 @@ function Todo() {
 
             const punchClockRef = collection(db, 'Users', currentUser.uid, 'Todo');
             const punchClockEntry = await addDoc(punchClockRef, {
-                todo: task
+                todo: task,
             })
+            setTask('');
+            getTasks();
         }
 
 
 
     }
 
-    // function deleteTask(id) {
+    async function deleteTask(id: string) {
+        try {
+            await deleteDoc(doc(db, 'Users', currentUser.uid, 'Todo', id));
 
-
-
-    // }
+        } catch (e) {
+            console.error("Error deleting document: ", e);
+        }
+        getTasks();
+    }
 
     return (
         <IonContent>
@@ -77,21 +94,21 @@ function Todo() {
                 </IonToolbar>
             </IonHeader>
             <IonContent>
-                <IonInput placeholder='Uppgift' onIonChange={handleSetTask}></IonInput>
-                <IonButton onClick={() => addTask}>Lägg till</IonButton>
+                <input className='' placeholder='Uppgift' onChange={handleSetTask} />
+                <IonButton onClick={addTask}>Lägg till</IonButton>
                 <IonLabel>{warningText}</IonLabel>
                 <IonList>
-                    {taskList.map((item, index) => (
-                        <IonItem key={index}>
+                    {taskList.map((item) => (
+                        <IonItem key={item.id}>
                             <IonLabel>
-                                {item.task}
+                                {item.todo}
 
                             </IonLabel>
-                            <IonIcon
+                            {<IonIcon
                                 onClick={() => deleteTask(item.id)}
                                 icon={trashBinOutline}
                                 slot="end"
-                            />
+                            />}
 
 
                         </IonItem>
