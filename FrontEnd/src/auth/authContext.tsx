@@ -1,18 +1,28 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence, } from "firebase/auth";
 
-const AuthContext = createContext(null);
+const AuthContext = createContext<any>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-    const [currentUser, setCurrentUser] = useState(null);
+    const [currentUser, setCurrentUser] = useState<any>(null);
     const auth = getAuth();
+    console.log(currentUser, 'authContext')
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-            setCurrentUser(user);
-        });
-        return unsubscribe;
-    }, [auth]);
+        const setAuthPersistence = async () => {
+            try {
+                await setPersistence(auth, browserLocalPersistence)
+
+                onAuthStateChanged(auth, (user) => {
+                    setCurrentUser(user)
+                })
+            }
+            catch (error) {
+                console.log('persistence misslyckades')
+            }
+        }
+        setAuthPersistence();
+    }, [auth])
 
     return (
         <AuthContext.Provider value={{ currentUser }}>

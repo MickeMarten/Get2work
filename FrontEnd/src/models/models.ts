@@ -4,8 +4,14 @@ export interface IUser {
   name: string | undefined;
 }
 export interface IWorkday {
-  id: string | undefined;
+  id: string;
   date: string;
   hoursWorked: number;
   minutesWorked: number;
+}
+
+export interface ITodo {
+  todo: string;
+  id: string;
+  date: number;
 }

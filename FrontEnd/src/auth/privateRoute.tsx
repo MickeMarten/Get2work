@@ -1,17 +1,21 @@
 import React from 'react';
-import { Route, Redirect } from 'react-router-dom';
+import { Route, Redirect, RouteProps } from 'react-router-dom';
 import { useAuth } from './authContext';
 
-const PrivateRoute = ({ component: Component, ...rest }) => {
+interface PrivateRouteProps extends RouteProps {
+    component: React.ComponentType<any>;
+}
+
+const PrivateRoute: React.FC<PrivateRouteProps> = ({ component: Component, ...rest }) => {
     const { currentUser } = useAuth();
 
     return (
         <Route
             {...rest}
-            render={props => {
-                return currentUser ? <Component {...props} /> : <Redirect to='/start' />
-            }}
-        ></Route>
+            render={props =>
+                currentUser ? <Component {...props} /> : <Redirect to='/' />
+            }
+        />
     );
 }
 

@@ -1,14 +1,14 @@
 import '@ionic/react/css/core.css';
-import { IonCardSubtitle, IonCol, IonContent, IonGrid, IonHeader, IonPicker, IonPickerColumn, IonRow, IonSearchbar, IonText, IonToolbar } from '@ionic/react';
+import { IonCardSubtitle, IonCol, IonContent, IonGrid, IonHeader, IonPage, IonPicker, IonPickerColumn, IonRow, IonSearchbar, IonText, IonToolbar } from '@ionic/react';
 import { IonApp, IonCard, IonCardContent } from '@ionic/react';
 import { useEffect } from 'react';
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, getDoc, } from "firebase/firestore";
+import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, getDoc } from "firebase/firestore";
 import { useState } from "react";
 import { DateTime } from "luxon";
 import { useHistory } from "react-router-dom";
 import { getAuth, signOut } from "firebase/auth";
-import { IonButton, } from '@ionic/react';
+import { IonButton } from '@ionic/react';
 import firebaseConfig from '../firebaseConfig';
 import { useAuth } from '../auth/authContext';
 import DropDownChange from '../Components/DropdownChange';
@@ -17,58 +17,57 @@ import { IUser, IWorkday } from '../models/models';
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth();
-console.log(auth.name, auth.currentUser)
-
+console.log(auth.name, auth.currentUser);
 
 function PunchClock() {
-    const { currentUser } = useAuth()
-    const [userInfo, setUserInfo] = useState<IUser | undefined>(undefined)
-    const [startWork, setStartWork] = useState<DateTime | null>(null)
-    const [toggleBtn, setToggleBtn] = useState<boolean>(false)
-    const [toggleChangeBtn, setToggleChangeBtn] = useState<boolean>(false)
-    const [workData, setWorkData] = useState<IWorkday[]>([])
+    const { currentUser } = useAuth();
+    const [userInfo, setUserInfo] = useState<IUser | undefined>(undefined);
+    const [startWork, setStartWork] = useState<DateTime | null>(null);
+    const [toggleBtn, setToggleBtn] = useState<boolean>(false);
+    const [toggleChangeBtn, setToggleChangeBtn] = useState<boolean>(false);
+    const [workData, setWorkData] = useState<IWorkday[]>([]);
     const today = DateTime.now().toLocaleString();
     const [workedTime, setWorkedTime] = useState<{ hours: number, minutes: number }>({ hours: 0, minutes: 0 });
     const history = useHistory();
+    console.log(currentUser)
 
     async function getUserInfo() {
-        const userRef = doc(db, 'Users', currentUser.uid);
-        const userDoc = await getDoc(userRef)
-        const userData = userDoc.data() as IUser;
-        setUserInfo(userData)
-
+        if (currentUser) {
+            const userRef = doc(db, 'Users', currentUser.uid);
+            const userDoc = await getDoc(userRef);
+            const userData = userDoc.data() as IUser;
+            setUserInfo(userData);
+        }
     }
 
     async function getWorkData() {
-
-        const workDataRef = collection(db, 'Users', currentUser.uid, 'workData');
-        const workDataSnaphot = await getDocs(workDataRef)
-        const workDataList: IWorkday[] = workDataSnaphot.docs.map(doc => {
-            const data = doc.data()
-            return {
-                id: doc.id,
-                date: data.date,
-                hoursWorked: data.hoursWorked,
-                minutesWorked: data.minutesWorked,
-            }
-
-        });
-        console.log(workDataList)
-        setWorkData(workDataList);
+        if (currentUser) {
+            const workDataRef = collection(db, 'Users', currentUser.uid, 'workData');
+            const workDataSnaphot = await getDocs(workDataRef);
+            const workDataList: IWorkday[] = workDataSnaphot.docs.map(doc => {
+                const data = doc.data();
+                return {
+                    id: doc.id,
+                    date: data.date,
+                    hoursWorked: data.hoursWorked,
+                    minutesWorked: data.minutesWorked,
+                };
+            });
+            console.log(workDataList);
+            setWorkData(workDataList);
+        }
     }
-
 
     useEffect(() => {
         if (currentUser) {
             getWorkData();
             getUserInfo();
         }
-
     }, []);
 
-    async function handleLogout() {
+    function handleLogout() {
         signOut(auth);
-        history.push('/start');
+        history.push('/');
     }
 
     function handleStartBtn() {
@@ -79,7 +78,7 @@ function PunchClock() {
 
     const handleStopBtn = async () => {
         if (!startWork) {
-            console.log('tiden startades inte')
+            console.log('tiden startades inte');
         } else {
             const stopWork = DateTime.now();
             const duration = stopWork.diff(startWork);
@@ -89,11 +88,11 @@ function PunchClock() {
 
             try {
                 const punchClockRef = collection(db, 'Users', currentUser.uid, 'workData');
-                const punchClockEntry = await addDoc(punchClockRef, {
+                await addDoc(punchClockRef, {
                     date: today,
                     hoursWorked: hoursWorked,
                     minutesWorked: minutesWorked,
-                })
+                });
 
                 setWorkedTime({ hours: hoursWorked, minutes: minutesWorked });
                 setToggleBtn(false);
@@ -108,7 +107,6 @@ function PunchClock() {
     async function handleDelete(id: string) {
         try {
             await deleteDoc(doc(db, 'Users', currentUser.uid, 'workData', id));
-
         } catch (e) {
             console.error("Error deleting document: ", e);
         }
@@ -116,7 +114,7 @@ function PunchClock() {
     }
 
     return (
-        <IonApp>
+        <IonPage>
             <IonHeader>
                 <IonToolbar>
                     <IonText>Välkommen till jobbet {userInfo?.name}. Idag är det {today}</IonText>
@@ -126,7 +124,6 @@ function PunchClock() {
                     <IonButton onClick={() => { history.push('/todo') }}>Todo</IonButton>
                     <IonSearchbar color="light" placeholder='Sök här'></IonSearchbar>
                 </IonToolbar>
-
             </IonHeader>
 
             <IonContent>
@@ -155,7 +152,7 @@ function PunchClock() {
                     </IonRow>
                 </IonGrid>
             </IonContent>
-        </IonApp>
+        </IonPage>
     );
 }
 

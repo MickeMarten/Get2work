@@ -1,4 +1,3 @@
-import 'firebase/compat/database';
 import PunchClock from './punchClock/punchClock';
 import Todo from './todo/Todo';
 import SignUp from './signup/signUp';
@@ -10,6 +9,7 @@ import { Route, Redirect } from 'react-router-dom';
 import './index.css';
 import { AuthProvider } from './auth/authContext';
 import PrivateRoute from './auth/privateRoute';
+
 setupIonicReact();
 
 function App() {
@@ -18,11 +18,10 @@ function App() {
       <AuthProvider>
         <IonReactRouter>
           <IonRouterOutlet>
+            <Route exact path='/' component={Login} />
+            <Route component={SignUp} path='/signUp' />
             <PrivateRoute path="/punchclock" component={PunchClock} />
             <PrivateRoute path="/todo" component={Todo} />
-            <Route path='/signup' component={SignUp} />
-            <Route path='/start' component={Login} />
-            <Redirect exact from='/' to='/start' />
           </IonRouterOutlet>
         </IonReactRouter>
       </AuthProvider>
