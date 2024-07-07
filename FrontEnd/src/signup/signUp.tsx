@@ -64,15 +64,20 @@ function SignUp() {
     const handleSignUp = async () => {
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-            const user = userCredential.user;
+            if (userCredential) {
+                const user = userCredential.user;
 
-            await setDoc(doc(db, 'Users', user.uid), {
-                email: user.email,
-                createdAt: new Date(),
-                name: fullName,
-            });
+                await setDoc(doc(db, 'Users', user.uid), {
+                    email: user.email,
+                    createdAt: new Date(),
+                    name: fullName,
+                });
 
-            history.push('/punchclock');
+                history.push('/punchclock');
+                console.log('lyckad inloggning')
+            } else {
+                console.log('userCredential failed')
+            }
         } catch (error) {
             console.log(error, 'error med inloggning');
         }

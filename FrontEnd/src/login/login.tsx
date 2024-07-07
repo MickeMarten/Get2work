@@ -117,10 +117,11 @@ function Login() {
                         </IonCol>
                     </IonRow>
                 </IonGrid>
-                <IonFooter>
-                    Beta V.1.0
-                </IonFooter>
+
             </IonContent>
+            <IonFooter>
+                Beta V.1.0, hej Aylin =)
+            </IonFooter>
         </IonPage>
     );
 }

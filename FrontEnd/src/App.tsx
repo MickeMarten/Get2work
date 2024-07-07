@@ -7,7 +7,7 @@ import { setupIonicReact, IonRouterOutlet, IonApp } from '@ionic/react';
 import '@ionic/react/css/core.css';
 import { Route, Redirect } from 'react-router-dom';
 import './index.css';
-import { AuthProvider } from './auth/authContext';
+import { AuthProvider, useAuth } from './auth/authContext';
 import PrivateRoute from './auth/privateRoute';
 
 setupIonicReact();
@@ -17,15 +17,29 @@ function App() {
     <IonApp>
       <AuthProvider>
         <IonReactRouter>
-          <IonRouterOutlet>
-            <Route exact path='/' component={Login} />
-            <Route component={SignUp} path='/signUp' />
-            <PrivateRoute path="/punchclock" component={PunchClock} />
-            <PrivateRoute path="/todo" component={Todo} />
-          </IonRouterOutlet>
+          <AuthHandler />
         </IonReactRouter>
       </AuthProvider>
     </IonApp>
+  );
+}
+
+function AuthHandler() {
+  const { currentUser, loading } = useAuth();
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  return (
+    <IonRouterOutlet>
+      <Route exact path="/">
+        {currentUser ? <Redirect to="/punchclock" /> : <Login />}
+      </Route>
+      <Route path="/signup" component={SignUp} />
+      <PrivateRoute path="/punchclock" component={PunchClock} />
+      <PrivateRoute path="/todo" component={Todo} />
+    </IonRouterOutlet>
   );
 }
 
