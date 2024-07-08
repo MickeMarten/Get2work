@@ -10,16 +10,18 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@ionic/react": "^8.2.0",
+    "@ionic/react": "^8.2.2",
+    "@ionic/react-router": "^8.2.2",
     "firebase": "^10.12.1",
     "luxon": "^3.4.4",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-router-dom": "^5.3.4"
   },
   "devDependencies": {
     "@types/luxon": "^3.4.2",
     "@types/react": "^18.2.66",
     "@types/react-dom": "^18.2.22",
+    "@types/react-router-dom": "^5.3.3",
     "@typescript-eslint/eslint-plugin": "^7.2.0",
     "@typescript-eslint/parser": "^7.2.0",
     "@vitejs/plugin-react": "^4.2.1",
