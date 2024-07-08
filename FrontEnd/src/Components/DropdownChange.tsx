@@ -3,7 +3,7 @@ import { useState } from "react";
 import { collection, updateDoc, doc, getDocs } from "firebase/firestore";
 
 
-function DropDownChange({ currentUser, dbRef, getWorkData }: { currentUser: any, dbRef: any, getWorkData: any }) {
+function DropDownChange({ currentUser, dbRef, getWorkData, workDataId }: { currentUser: any, dbRef: any, getWorkData: any, workDataId: string }) {
 
 
   // const { currentUser } = useAuth()
@@ -38,31 +38,25 @@ function DropDownChange({ currentUser, dbRef, getWorkData }: { currentUser: any,
   };
 
   async function handleWorkDataChange() {
-    const workDataCollectionRef = collection(dbRef, 'Users', currentUser.uid, 'workData',);
-    const querySnapshot = await getDocs(workDataCollectionRef);
+    const workDataRef = doc(dbRef, 'Users', currentUser.uid, 'workData', workDataId);
 
-    querySnapshot.forEach(async (document) => {
-      const docId = document.id
-      const workDataRef = doc(dbRef, 'Users', currentUser.uid, 'workData', docId);
+    await updateDoc(workDataRef, {
+      hoursWorked: changedHours,
+      minutesWorked: changedMinutes,
+    });
 
-      await updateDoc(workDataRef, {
-        hoursWorked: changedHours,
-        minutesWorked: changedMinutes,
-      });
-    })
-    getWorkData()
-
+    getWorkData();
   }
   return (<>
-    <IonPicker class=''   >
-      <IonPickerColumn onIonChange={handleHourPicker} >
+    <IonPicker className='' >
+      <IonPickerColumn className="" onIonChange={handleHourPicker} >
         {hourValueList}
       </IonPickerColumn>
-      <IonPickerColumn onIonChange={handleMinutePicker}>
+      <IonPickerColumn className="" onIonChange={handleMinutePicker}>
         {minuteValueList}
       </IonPickerColumn>
     </IonPicker>
-    <IonButton onClick={handleWorkDataChange}>Ok</IonButton>
+    <IonButton expand="block" onClick={handleWorkDataChange}>Ändra</IonButton>
   </>)
 
 }

@@ -1,7 +1,7 @@
 import '@ionic/react/css/core.css';
-import { IonCardSubtitle, IonCol, IonContent, IonGrid, IonHeader, IonPage, IonPicker, IonPickerColumn, IonRow, IonSearchbar, IonText, IonToolbar } from '@ionic/react';
-import { IonApp, IonCard, IonCardContent } from '@ionic/react';
-import { useEffect } from 'react';
+import { IonCardSubtitle, IonCol, IonContent, IonFooter, IonGrid, IonHeader, IonPage, IonRow, IonText, IonToolbar } from '@ionic/react';
+import { IonCard, IonCardContent } from '@ionic/react';
+import { HtmlHTMLAttributes, useEffect } from 'react';
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, getDoc } from "firebase/firestore";
 import { useState } from "react";
@@ -24,12 +24,16 @@ function PunchClock() {
     const [userInfo, setUserInfo] = useState<IUser | undefined>(undefined);
     const [startWork, setStartWork] = useState<DateTime | null>(null);
     const [toggleBtn, setToggleBtn] = useState<boolean>(false);
-    const [toggleChangeBtn, setToggleChangeBtn] = useState<boolean>(false);
+    const [toggleChangeBtn, setToggleChangeBtn] = useState({});
     const [workData, setWorkData] = useState<IWorkday[]>([]);
     const today = DateTime.now().toLocaleString();
     const [workedTime, setWorkedTime] = useState<{ hours: number, minutes: number }>({ hours: 0, minutes: 0 });
     const history = useHistory();
     console.log(currentUser)
+
+    const handleToggleChangeBtn = (id: string) => {
+        setToggleChangeBtn((prev) => ({ ...prev, [id]: !prev[id] }))
+    }
 
     async function getUserInfo() {
         if (currentUser) {
@@ -116,22 +120,23 @@ function PunchClock() {
     return (
         <IonPage>
             <IonHeader>
-                <IonToolbar>
-                    <IonText>Välkommen till jobbet {userInfo?.name}. Idag är det {today}</IonText>
-                    <IonButton onClick={handleStartBtn} style={{ display: toggleBtn ? 'none' : '' }}>Börja jobba</IonButton>
-                    <IonButton onClick={handleStopBtn} style={{ display: toggleBtn ? '' : 'none' }}>Sluta jobba</IonButton>
-                    <IonButton onClick={handleLogout}>Logga ut</IonButton>
-                    <IonButton onClick={() => { history.push('/todo') }}>Todo</IonButton>
-                    <IonSearchbar color="light" placeholder='Sök här'></IonSearchbar>
+                <IonToolbar color='secondary' >
+                    <div className='flex flex-col p-3 text-center'>
+                        <IonText>Välkommen till jobbet {userInfo?.name}.</IonText>
+                        <IonText>Idag är det {today}.</IonText>
+                        <IonButton color='success' onClick={handleStartBtn} style={{ display: toggleBtn ? 'none' : '' }}>Börja jobba</IonButton>
+                        <IonButton color='danger' onClick={handleStopBtn} style={{ display: toggleBtn ? '' : 'none' }}>Sluta jobba</IonButton>
+
+                    </div>
                 </IonToolbar>
             </IonHeader>
 
-            <IonContent>
-                <IonGrid>
+            <IonContent color='tertiary'>
+                <IonGrid className=''>
                     <IonRow>
                         {workData.map((item) => (
-                            <IonCard key={item.id}>
-                                <IonCardContent>
+                            <IonCard key={item.id} >
+                                <IonCardContent className=''>
                                     <IonCol>
                                         <IonCardSubtitle>{item.date}</IonCardSubtitle>
                                     </IonCol>
@@ -139,11 +144,10 @@ function PunchClock() {
                                         <IonCardSubtitle>{item.hoursWorked} timmar och {item.minutesWorked} minuter arbetade</IonCardSubtitle>
                                     </IonCol>
                                     <IonCol>
-                                        <IonButton onClick={() => handleDelete(item.id)}>Ta bort</IonButton>
-                                        <IonButton onClick={() => { history.push('/todo') }}>Todo</IonButton>
-                                        <IonButton onClick={() => { toggleChangeBtn ? setToggleChangeBtn(false) : setToggleChangeBtn(true) }}>Ändra</IonButton>
-                                        <div className={toggleChangeBtn ? '' : 'hidden'}>
-                                            <DropDownChange currentUser={currentUser} dbRef={db} getWorkData={getWorkData}></DropDownChange>
+                                        <IonButton expand="block" onClick={() => handleDelete(item.id)}>Ta bort</IonButton>
+                                        <IonButton expand="block" className='mt-10' onClick={() => { handleToggleChangeBtn(item.id) }}>{toggleChangeBtn[item.id] ? 'Ångra' : 'Ändra'}</IonButton>
+                                        <div className={toggleChangeBtn[item.id] ? '' : 'hidden'}>
+                                            <DropDownChange currentUser={currentUser} dbRef={db} getWorkData={getWorkData} workDataId={item.id}></DropDownChange>
                                         </div>
                                     </IonCol>
                                 </IonCardContent>
@@ -152,6 +156,13 @@ function PunchClock() {
                     </IonRow>
                 </IonGrid>
             </IonContent>
+            <IonFooter>
+                <IonToolbar color='secondary'>
+                    <IonButton color='success' className='w-32' slot='start' onClick={handleLogout}>Logga ut</IonButton>
+                    <IonButton color='success' className='w-32' slot='end' onClick={() => { history.push('/todo') }}>Todo</IonButton>
+                </IonToolbar>
+
+            </IonFooter>
         </IonPage>
     );
 }

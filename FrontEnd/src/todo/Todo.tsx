@@ -9,16 +9,24 @@ import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc } from "fireb
 import { useAuth } from '../auth/authContext';
 import { useHistory } from "react-router-dom";
 import { ITodo } from '../models/models';
+import { getAuth, signOut } from "firebase/auth";
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth();
 function Todo() {
     const [task, setTask] = useState<string>('')
     const [taskList, setTaskList] = useState<ITodo[]>([])
-    const [taskCount, setTaskCount] = useState<number>(0)
+    let [taskCount, setTaskCount] = useState<number>(0)
+    const [taskComplete, setTaskComplete] = useState<Boolean>(false)
     const [warningText, setWarningText] = useState<string>('')
     const { currentUser } = useAuth();
     const history = useHistory()
+
+    function handleLogout() {
+        signOut(auth);
+        history.push('/');
+    }
 
     function handleSetTask(event: Event) {
         const value = (event.target as HTMLInputElement).value
@@ -80,30 +88,52 @@ function Todo() {
         getTasks();
     }
 
+    function handleCompleteTask(id: string) {
+        if (taskComplete === false) {
+            setTaskComplete(true);
+            setTaskCount(prevCount => prevCount + 1);
+        } else {
+            setTaskComplete(false);
+            setTaskCount(prevCount => prevCount - 1);
+        }
+    }
+
     return (
         <IonPage>
+            <IonHeader>
+                <IonToolbar>
+                    <IonButtons>
+                        <IonBackButton defaultHref='/punchclock'></IonBackButton>
+                    </IonButtons>
+                    <IonTitle>Todo</IonTitle>
+                </IonToolbar>
+            </IonHeader>
             <IonContent>
-                <IonHeader>
-                    <IonToolbar>
-                        <IonButtons>
-                            <IonBackButton defaultHref='/punchclock'></IonBackButton>
-                        </IonButtons>
-                        <IonTitle>Todo</IonTitle>
-                    </IonToolbar>
-                </IonHeader>
-                <IonContent>
-                    <IonInput className='' placeholder='Uppgift' onIonInput={handleSetTask}></IonInput>
+                <div className='flex flex-col gap-10'>
+                    <IonInput
+                        className=''
+                        type="text"
+                        fill="solid"
+                        label="Skriv en uppgift"
+                        labelPlacement="floating"
+                        placeholder="Skriv en uppgift"
+                        errorText={warningText}
+                        onIonInput={handleSetTask}
+                    >
+                    </IonInput>
                     <IonButton onClick={addTask}>Lägg till</IonButton>
-                    <IonLabel>{warningText}</IonLabel>
+                    <IonLabel color='warning'>{warningText}</IonLabel>
                     <IonList>
-                        {taskList.map((item) => (
-                            <IonItem key={item.id}>
-                                <IonLabel>
-                                    {item.todo}
+                        {taskList.map((task) => (
+                            <IonItem key={task.id}>
+                                <IonLabel onClick={handleCompleteTask(task.id)}>
+                                    <div className={taskComplete ? 'line-through' : ''}>
+                                        {task.todo}
+                                    </div>
 
                                 </IonLabel>
                                 {<IonIcon
-                                    onClick={() => deleteTask(item.id)}
+                                    onClick={() => deleteTask(task.id)}
                                     icon={trashBinOutline}
                                     slot="end"
                                 />}
@@ -113,9 +143,11 @@ function Todo() {
                         ))}
                     </IonList>
                     <IonLabel> Uppgifter utförda: {taskCount}</IonLabel>
-                </IonContent>
-
+                </div>
             </IonContent>
+            <IonToolbar color='secondary'>
+                <IonButton color='success' className='w-32' slot='start' onClick={handleLogout}>Logga ut</IonButton>
+            </IonToolbar>
         </IonPage>
 
     )
