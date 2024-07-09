@@ -91,6 +91,9 @@ function PunchClock() {
             const today = stopWork.toISODate();
 
             try {
+                if (!currentUser) {
+                    return;
+                }
                 const punchClockRef = collection(db, 'Users', currentUser.uid, 'workData');
                 await addDoc(punchClockRef, {
                     date: today,
@@ -109,7 +112,11 @@ function PunchClock() {
     };
 
     async function handleDelete(id: string) {
+
         try {
+            if (!currentUser) {
+                return;
+            }
             await deleteDoc(doc(db, 'Users', currentUser.uid, 'workData', id));
         } catch (e) {
             console.error("Error deleting document: ", e);
