@@ -1,4 +1,4 @@
-import { IonButton, IonContent, IonHeader, IonInput, IonGrid, IonCol, IonRow, IonToolbar, IonPage, IonIcon, IonBackButton, IonTitle, IonButtons, useIonRouter } from "@ionic/react";
+import { IonButton, IonContent, IonHeader, IonInput, IonGrid, IonCol, IonRow, IonToolbar, IonPage, IonIcon, IonBackButton, IonTitle, IonButtons } from "@ionic/react";
 import { checkmarkDoneOutline } from 'ionicons/icons';
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth"
 import { initializeApp } from "firebase/app";
