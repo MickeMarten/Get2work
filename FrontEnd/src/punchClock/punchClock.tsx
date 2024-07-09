@@ -1,7 +1,7 @@
 import '@ionic/react/css/core.css';
 import { IonCardSubtitle, IonCol, IonContent, IonFooter, IonGrid, IonHeader, IonPage, IonRow, IonText, IonToolbar } from '@ionic/react';
 import { IonCard, IonCardContent } from '@ionic/react';
-import { HtmlHTMLAttributes, useEffect } from 'react';
+import { useEffect } from 'react';
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, getDoc } from "firebase/firestore";
 import { useState } from "react";

@@ -3,7 +3,7 @@ import { checkmarkDoneOutline } from 'ionicons/icons';
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth"
 import { initializeApp } from "firebase/app";
 import { getFirestore, doc, setDoc } from "firebase/firestore";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useHistory } from "react-router-dom";
 import firebaseConfig from "../firebaseConfig";
 

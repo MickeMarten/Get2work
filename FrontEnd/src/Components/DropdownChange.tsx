@@ -1,6 +1,6 @@
 import { IonButton, IonPicker, IonPickerColumn, IonPickerColumnOption } from "@ionic/react";
 import { useState } from "react";
-import { collection, updateDoc, doc, getDocs } from "firebase/firestore";
+import { updateDoc, doc } from "firebase/firestore";
 
 
 function DropDownChange({ currentUser, dbRef, getWorkData, workDataId }: { currentUser: any, dbRef: any, getWorkData: any, workDataId: string }) {
