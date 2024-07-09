@@ -22,3 +22,5 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+# Firebase hosting cache file
+hosting.ZGIzdA.cache
