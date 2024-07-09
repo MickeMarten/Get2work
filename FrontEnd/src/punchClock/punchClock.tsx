@@ -18,6 +18,7 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth();
 console.log(auth.name, auth.currentUser);
+//Hej Mamma
 
 function PunchClock() {
     const { currentUser } = useAuth();
