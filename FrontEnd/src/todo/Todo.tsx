@@ -17,8 +17,8 @@ const auth = getAuth();
 function Todo() {
     const [task, setTask] = useState<string>('')
     const [taskList, setTaskList] = useState<ITodo[]>([])
-    let [taskCount, setTaskCount] = useState<number>(0)
-    const [taskComplete, setTaskComplete] = useState<Boolean>(false)
+    const [taskCount, setTaskCount] = useState<number>(0)
+    const [taskComplete, setTaskComplete] = useState<boolean>(false)
     const [warningText, setWarningText] = useState<string>('')
     const { currentUser } = useAuth();
     const history = useHistory()
@@ -70,6 +70,7 @@ function Todo() {
             const punchClockEntry = await addDoc(punchClockRef, {
                 todo: task,
             })
+            console.log(punchClockEntry);
             setTask('');
             getTasks();
         }
@@ -126,7 +127,7 @@ function Todo() {
                     <IonList>
                         {taskList.map((task) => (
                             <IonItem key={task.id}>
-                                <IonLabel onClick={handleCompleteTask(task.id)}>
+                                <IonLabel onClick={() => handleCompleteTask}>
                                     <div className={taskComplete ? 'line-through' : ''}>
                                         {task.todo}
                                     </div>

@@ -1,13 +1,19 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } from "firebase/auth";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence, Auth, User } from "firebase/auth";
 
-const AuthContext = createContext<any>(null);
+interface AuthContextType {
+    currentUser: User | null;
+    userLoggedIn: boolean;
+    loading: boolean;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-    const [currentUser, setCurrentUser] = useState<any>(null);
+    const [currentUser, setCurrentUser] = useState<User | null>(null);
     const [userLoggedIn, setUserLoggedIn] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(true);
-    const auth = getAuth();
+    const auth: Auth = getAuth();
 
     useEffect(() => {
         const setAuthPersistence = async () => {
@@ -32,7 +38,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setAuthPersistence();
     }, [auth]);
 
-    const value = {
+    const value: AuthContextType = {
         currentUser,
         userLoggedIn,
         loading,
@@ -46,5 +52,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 }
 
 export function useAuth() {
-    return useContext(AuthContext);
+    const context = useContext(AuthContext);
+    if (!context) {
+        throw new Error('useAuth must be used within an AuthProvider');
+    }
+    return context;
 }

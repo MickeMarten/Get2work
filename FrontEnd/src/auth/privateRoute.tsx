@@ -3,7 +3,7 @@ import { Route, Redirect, RouteProps } from 'react-router-dom';
 import { useAuth } from './authContext';
 
 interface PrivateRouteProps extends RouteProps {
-    component: React.ComponentType<any>;
+    component: React.ComponentType<{ userId?: string }>;
 }
 
 const PrivateRoute: React.FC<PrivateRouteProps> = ({ component: Component, ...rest }) => {
@@ -13,7 +13,7 @@ const PrivateRoute: React.FC<PrivateRouteProps> = ({ component: Component, ...re
         <Route
             {...rest}
             render={props =>
-                currentUser ? <Component {...props} /> : <Redirect to='/' />
+                currentUser ? <Component {...props} userId={currentUser.uid} /> : <Redirect to='/' />
             }
         />
     );

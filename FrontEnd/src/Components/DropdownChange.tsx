@@ -3,7 +3,7 @@ import { useState } from "react";
 import { updateDoc, doc } from "firebase/firestore";
 
 
-function DropDownChange({ currentUser, dbRef, getWorkData, workDataId }: { currentUser: any, dbRef: any, getWorkData: any, workDataId: string }) {
+function DropDownChange({ currentUser, dbRef, getWorkData, workDataId }: { currentUser: any, dbRef: any, getWorkData: () => void, workDataId: string }) {
 
 
   // const { currentUser } = useAuth()
@@ -30,12 +30,12 @@ function DropDownChange({ currentUser, dbRef, getWorkData, workDataId }: { curre
     const time = event.detail.value;
     setChangedHours(time);
     console.log(time)
-  };
+  }
   function handleMinutePicker(event: CustomEvent,) {
-    const time = event.detail.value;
-    setChangedMinutes(time);
+    const time = event.detail.value
+    setChangedMinutes(time)
     console.log(time)
-  };
+  }
 
   async function handleWorkDataChange() {
     const workDataRef = doc(dbRef, 'Users', currentUser.uid, 'workData', workDataId);

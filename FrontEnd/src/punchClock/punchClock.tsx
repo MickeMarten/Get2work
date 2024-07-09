@@ -29,7 +29,7 @@ function PunchClock() {
     const today = DateTime.now().toLocaleString();
     const [workedTime, setWorkedTime] = useState<{ hours: number, minutes: number }>({ hours: 0, minutes: 0 });
     const history = useHistory();
-    console.log(currentUser)
+    console.log(currentUser, workedTime)
 
     const handleToggleChangeBtn = (id: string) => {
         setToggleChangeBtn((prev) => ({ ...prev, [id]: !prev[id] }))

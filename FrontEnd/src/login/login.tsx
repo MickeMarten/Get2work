@@ -22,6 +22,7 @@ function Login() {
     const handleLogin = async () => {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
+        console.log(user);
         history.push('/punchclock');
         console.log(email, password);
     }
