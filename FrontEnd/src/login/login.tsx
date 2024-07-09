@@ -120,7 +120,7 @@ function Login() {
 
             </IonContent>
             <IonFooter>
-                Beta V.1.0, hej Aylin =)
+                Beta V.1.0, hej Aylin
             </IonFooter>
         </IonPage>
     );
