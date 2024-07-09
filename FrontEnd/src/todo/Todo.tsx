@@ -1,7 +1,7 @@
 
 import '@ionic/react/css/core.css';
 import { useState, useEffect } from 'react';
-import { IonHeader, IonToolbar, IonTitle, IonContent, IonInput, IonButton, IonList, IonItem, IonLabel, IonIcon, IonPage, IonBackButton, IonChip, IonButtons } from '@ionic/react';
+import { IonHeader, IonToolbar, IonTitle, IonContent, IonInput, IonButton, IonList, IonItem, IonLabel, IonIcon, IonPage, IonBackButton, IonButtons } from '@ionic/react';
 import { trashBinOutline } from 'ionicons/icons';
 import firebaseConfig from '../firebaseConfig';
 import { initializeApp } from "firebase/app";
@@ -88,7 +88,7 @@ function Todo() {
         getTasks();
     }
 
-    function handleCompleteTask(id: string) {
+    function handleCompleteTask() {
         if (taskComplete === false) {
             setTaskComplete(true);
             setTaskCount(prevCount => prevCount + 1);
