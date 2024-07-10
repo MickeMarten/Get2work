@@ -26,7 +26,7 @@ function PunchClock() {
     const [userInfo, setUserInfo] = useState<IUser | undefined>(undefined);
     const [startWork, setStartWork] = useState<DateTime | null>(null);
     const [toggleBtn, setToggleBtn] = useState<boolean>(false);
-    const [toggleChangeBtn, setToggleChangeBtn] = useState({});
+    const [toggleChangeBtn, setToggleChangeBtn] = useState<{ [key: string]: boolean }>({});;
     const [workData, setWorkData] = useState<IWorkday[]>([]);
     const today = DateTime.now().toLocaleString();
     const [workedTime, setWorkedTime] = useState<{ hours: number, minutes: number }>({ hours: 0, minutes: 0 });
