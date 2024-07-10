@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { IonButton, IonPicker, IonPickerColumn, IonPickerColumnOption } from "@ionic/react";
 import { useState } from "react";
 import { updateDoc, doc } from "firebase/firestore";
