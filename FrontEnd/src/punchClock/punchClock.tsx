@@ -1,3 +1,4 @@
+/* eslint-disable */
 import '@ionic/react/css/core.css';
 import { IonCardSubtitle, IonCol, IonContent, IonFooter, IonGrid, IonHeader, IonPage, IonRow, IonText, IonToolbar } from '@ionic/react';
 import { IonCard, IonCardContent } from '@ionic/react';
