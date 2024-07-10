@@ -23,6 +23,7 @@ function Todo() {
     const { currentUser } = useAuth();
     const history = useHistory()
 
+
     function handleLogout() {
         signOut(auth);
         history.push('/');
@@ -35,6 +36,9 @@ function Todo() {
     }
 
     async function getTasks(): Promise<void> {
+        if (!currentUser)
+            return;
+
         const dbTodoRef = collection(db, 'Users', currentUser.uid, 'Todo')
 
         const todoDataSnapshot = await getDocs(dbTodoRef)
@@ -58,6 +62,8 @@ function Todo() {
 
 
     async function addTask() {
+        if (!currentUser)
+            return;
         if (task === '') {
             setWarningText('Du måste skriva något hallå.');
             setTimeout(() => {
@@ -80,6 +86,8 @@ function Todo() {
     }
 
     async function deleteTask(id: string) {
+        if (!currentUser)
+            return;
         try {
             await deleteDoc(doc(db, 'Users', currentUser.uid, 'Todo', id));
 
