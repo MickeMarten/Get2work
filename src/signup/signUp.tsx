@@ -79,7 +79,7 @@ function SignUp() {
                 console.log('userCredential failed')
             }
         } catch (error) {
-            console.log(error, 'error med inloggning');
+            console.log(error, 'Ogiltig Email');
         }
     }
 
@@ -121,7 +121,7 @@ function SignUp() {
                                 label="Email"
                                 placeholder="Exempel@hotmail.com"
                                 labelPlacement="floating"
-                                errorText='Fullständig Email'
+                                errorText='Ogiltig Email'
                                 required={true}
                                 onIonInput={(event) => validateEmail(event)}
                                 onIonBlur={markEmailTouched}

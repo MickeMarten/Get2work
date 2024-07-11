@@ -17,14 +17,18 @@ function Login() {
     const [isEmailTouched, setIsEmailTouched] = useState<boolean>(false);
     const [isEmailValid, setIsEmailValid] = useState<boolean>();
     const [isPasswordValid, setIsPasswordValid] = useState<boolean | undefined>();
-    const [isPasswordTouched, setIsPasswordTouched] = useState<boolean | undefined>();
+    const [isPasswordTouched, setIsPasswordTouched] = useState<boolean | undefined>(false);
 
     const handleLogin = async () => {
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-        console.log(user);
-        history.push('/punchclock');
-        console.log(email, password);
+        try {
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+            console.log(user);
+            history.push('/punchclock');
+            console.log(email, password);
+        } catch {
+            console.log(Error)
+        }
     }
 
     const validateMatch = (email: string) => {
