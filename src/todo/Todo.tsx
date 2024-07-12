@@ -5,11 +5,12 @@ import { IonHeader, IonToolbar, IonTitle, IonContent, IonInput, IonButton, IonLi
 import { trashBinOutline } from 'ionicons/icons';
 import firebaseConfig from '../firebaseConfig';
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc } from "firebase/firestore";
+import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, updateDoc } from "firebase/firestore";
 import { useAuth } from '../auth/authContext';
 import { useHistory } from "react-router-dom";
 import { ITodo } from '../models/models';
 import { getAuth, signOut } from "firebase/auth";
+import { update } from 'firebase/database';
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
@@ -18,7 +19,6 @@ function Todo() {
     const [task, setTask] = useState<string>('')
     const [taskList, setTaskList] = useState<ITodo[]>([])
     const [taskCount, setTaskCount] = useState<number>(0)
-    const [taskComplete, setTaskComplete] = useState<boolean>(false)
     const [warningText, setWarningText] = useState<string>('')
     const { currentUser } = useAuth();
     const history = useHistory()
@@ -45,15 +45,21 @@ function Todo() {
         const todoData = todoDataSnapshot.docs.map(doc => {
 
             const data = doc.data()
+            console.log(data);
+
             return {
                 todo: data.todo,
                 id: doc.id,
-                date: Date.now()
+                date: Date.now(),
+                taskComplete: data.taskComplete,
             }
         })
 
         setTaskList(todoData)
-        console.log(todoData, taskList)
+        const completedData = todoData.filter((todo) => todo.taskComplete === true).length;
+        setTaskCount(completedData);
+
+        console.log(taskList)
     }
 
     useEffect(() => {
@@ -75,9 +81,9 @@ function Todo() {
             const punchClockRef = collection(db, 'Users', currentUser.uid, 'Todo');
             const punchClockEntry = await addDoc(punchClockRef, {
                 todo: task,
+                taskComplete: false,
             })
-            console.log(punchClockEntry);
-            setTask('');
+
             getTasks();
         }
 
@@ -97,14 +103,24 @@ function Todo() {
         getTasks();
     }
 
-    function handleCompleteTask() {
-        if (taskComplete === false) {
-            setTaskComplete(true);
-            setTaskCount(prevCount => prevCount + 1);
-        } else {
-            setTaskComplete(false);
-            setTaskCount(prevCount => prevCount - 1);
+    async function handleCompleteTask(task: ITodo) {
+
+        if (!currentUser) {
+            return;
         }
+        console.log('handlecomplete');
+        const dbTaskRef = doc(db, 'Users', currentUser.uid, 'Todo', task.id)
+        await updateDoc(dbTaskRef, {
+            taskComplete: !task.taskComplete
+        })
+        const temp = [...taskList]
+        const todoToChange = temp.find((tempTask) => tempTask.id === task.id)
+        if (!todoToChange) return;
+        todoToChange.taskComplete = !todoToChange?.taskComplete
+        setTaskList(temp)
+        const completedTaskCount = temp.filter((task) => task.taskComplete === true).length
+        setTaskCount(completedTaskCount)
+
     }
 
     return (
@@ -135,8 +151,8 @@ function Todo() {
                     <IonList>
                         {taskList.map((task) => (
                             <IonItem key={task.id}>
-                                <IonLabel onClick={() => handleCompleteTask}>
-                                    <div className={taskComplete ? 'line-through' : ''}>
+                                <IonLabel onClick={() => handleCompleteTask(task)}>
+                                    <div className={task.taskComplete ? 'line-through' : ''}>
                                         {task.todo}
                                     </div>
 

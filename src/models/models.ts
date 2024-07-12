@@ -14,4 +14,5 @@ export interface ITodo {
   todo: string;
   id: string;
   date: number;
+  taskComplete: boolean;
 }
