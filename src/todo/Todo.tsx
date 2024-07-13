@@ -5,7 +5,7 @@ import { IonHeader, IonToolbar, IonTitle, IonContent, IonInput, IonButton, IonLi
 import { trashBinOutline } from 'ionicons/icons';
 import firebaseConfig from '../firebaseConfig';
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc } from "firebase/firestore";
+import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, updateDoc } from "firebase/firestore";
 import { useAuth } from '../auth/authContext';
 import { useHistory } from "react-router-dom";
 import { ITodo } from '../models/models';
@@ -38,33 +38,6 @@ function Todo() {
 
     }
 
-    async function getTasks(): Promise<void> {
-        if (!currentUser)
-            return;
-
-        const dbTodoRef = collection(db, 'Users', currentUser.uid, 'Todo')
-
-        const todoDataSnapshot = await getDocs(dbTodoRef)
-        const todoData = todoDataSnapshot.docs.map<ITodo>(doc => {
-
-            const data = doc.data()
-            return {
-                todo: data.todo,
-                date: data.date,
-                id: doc.id,
-
-            }
-        })
-
-        setTaskList(todoData)
-        console.log(todoData, taskList)
-    }
-
-    useEffect(() => {
-        getTasks()
-    }, [])
-
-
     async function addTask() {
         if (!currentUser)
             return;
@@ -80,6 +53,8 @@ function Todo() {
             const punchClockEntry = await addDoc(punchClockRef, {
                 todo: task,
                 date: DateTime.now().toLocaleString(),
+                completed: false,
+
             })
             console.log(punchClockEntry);
             setTask('');
@@ -89,6 +64,35 @@ function Todo() {
 
 
     }
+
+    async function getTasks(): Promise<void> {
+        if (!currentUser)
+            return;
+
+        const dbTodoRef = collection(db, 'Users', currentUser.uid, 'Todo')
+
+        const todoDataSnapshot = await getDocs(dbTodoRef)
+        const todoData = todoDataSnapshot.docs.map<ITodo>(doc => {
+
+            const data = doc.data()
+            return {
+                todo: data.todo,
+                date: data.date,
+                id: doc.id,
+                completed: data.completed
+
+            }
+        })
+
+        setTaskList(todoData)
+        console.log(todoData, taskList)
+    }
+
+    useEffect(() => {
+        getTasks()
+    }, [])
+
+
 
     async function deleteTask(id: string) {
         if (!currentUser)
@@ -102,15 +106,22 @@ function Todo() {
         getTasks();
     }
 
-    function handleCompleteTask() {
+    async function handleCompleteTask(id: string) {
+        if (!currentUser)
+            return;
+        const dbTodoRef = doc(db, 'Users', currentUser.uid, 'Todo', id);
+        await updateDoc(dbTodoRef, {
+            completed:
+        })
 
-        if (taskComplete === false) {
-            setTaskComplete(true);
-            setTaskCount(prevCount => prevCount + 1);
-        } else {
-            setTaskComplete(false);
-            setTaskCount(prevCount => prevCount - 1);
-        }
+
+        // if (taskComplete === false) {
+        //     setTaskComplete(true);
+        //     setTaskCount(prevCount => prevCount + 1);
+        // } else {
+        //     setTaskComplete(false);
+        //     setTaskCount(prevCount => prevCount - 1);
+        // }
     }
 
     return (
@@ -126,7 +137,7 @@ function Todo() {
             <IonContent color=''>
                 <div className='flex flex-col mt-4 gap-5'>
                     <IonInput
-                        className=' w-52 ml-2'
+                        className=' w-52 ml-2 text-xl'
                         type="text"
                         fill="outline"
                         label="Skriv en uppgift"
