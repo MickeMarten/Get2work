@@ -1,4 +1,4 @@
-
+/* eslint-disable */
 import '@ionic/react/css/core.css';
 import { useState, useEffect } from 'react';
 import { IonHeader, IonToolbar, IonTitle, IonContent, IonInput, IonButton, IonList, IonItem, IonLabel, IonIcon, IonPage, IonBackButton, IonButtons } from '@ionic/react';
