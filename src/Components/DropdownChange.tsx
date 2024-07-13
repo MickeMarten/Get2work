@@ -57,7 +57,7 @@ function DropDownChange({ currentUser, dbRef, getWorkData, workDataId }: { curre
         {minuteValueList}
       </IonPickerColumn>
     </IonPicker>
-    <IonButton expand="block" onClick={handleWorkDataChange}>Ändra</IonButton>
+    <IonButton expand="block" onClick={handleWorkDataChange}>Ok</IonButton>
   </>)
 
 }

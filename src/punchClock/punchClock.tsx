@@ -133,36 +133,37 @@ function PunchClock() {
                     <div className='flex flex-col p-3 text-center'>
                         <IonText>Välkommen till jobbet {userInfo?.name}.</IonText>
                         <IonText>Idag är det {today}.</IonText>
-                        <IonButton color='success' onClick={handleStartBtn} style={{ display: toggleBtn ? 'none' : '' }}>Börja jobba</IonButton>
-                        <IonButton color='danger' onClick={handleStopBtn} style={{ display: toggleBtn ? '' : 'none' }}>Sluta jobba</IonButton>
 
                     </div>
                 </IonToolbar>
             </IonHeader>
 
-            <IonContent color='tertiary'>
+            <IonContent className='bg'>
+                <div className='flex justify-center mt-3 mb-3'>
+                    <IonButton color='primary' onClick={handleStartBtn} style={{ display: toggleBtn ? 'none' : '' }}>Börja jobba</IonButton>
+                    <IonButton color='danger' onClick={handleStopBtn} style={{ display: toggleBtn ? '' : 'none' }}>Sluta jobba</IonButton>
+                </div>
+
                 <IonGrid className=''>
-                    <IonRow>
-                        {workData.map((item) => (
-                            <IonCard key={item.id} >
-                                <IonCardContent className=''>
-                                    <IonCol>
-                                        <IonCardSubtitle>{item.date}</IonCardSubtitle>
-                                    </IonCol>
-                                    <IonCol>
-                                        <IonCardSubtitle>{item.hoursWorked} timmar och {item.minutesWorked} minuter arbetade</IonCardSubtitle>
-                                    </IonCol>
-                                    <IonCol>
-                                        <IonButton expand="block" onClick={() => handleDelete(item.id)}>Ta bort</IonButton>
-                                        <IonButton expand="block" className='mt-10' onClick={() => { handleToggleChangeBtn(item.id) }}>{toggleChangeBtn[item.id] ? 'Ångra' : 'Ändra'}</IonButton>
-                                        <div className={toggleChangeBtn[item.id] ? '' : 'hidden'}>
-                                            <DropDownChange currentUser={currentUser} dbRef={db} getWorkData={getWorkData} workDataId={item.id}></DropDownChange>
-                                        </div>
-                                    </IonCol>
-                                </IonCardContent>
-                            </IonCard>
-                        ))}
-                    </IonRow>
+                    <div className=''>
+                        <IonRow className='flex flex-wrap justify-center'>
+                            {workData.map((item) => (
+                                <IonCol size="auto" key={item.id} className='w-full md:w-1/2 lg:w-1/4 p-2'>
+                                    <IonCard className=''>
+                                        <IonCardContent className=''>
+                                            <IonCardSubtitle>{item.date}</IonCardSubtitle>
+                                            <IonCardSubtitle>{item.hoursWorked} timmar och {item.minutesWorked} minuter arbetade</IonCardSubtitle>
+                                            <IonButton expand="block" onClick={() => handleDelete(item.id)}>Ta bort</IonButton>
+                                            <IonButton expand="block" className='mt-10' onClick={() => { handleToggleChangeBtn(item.id) }}>{toggleChangeBtn[item.id] ? 'Ångra' : 'Ändra'}</IonButton>
+                                            <div className={toggleChangeBtn[item.id] ? '' : 'hidden'}>
+                                                <DropDownChange currentUser={currentUser} dbRef={db} getWorkData={getWorkData} workDataId={item.id}></DropDownChange>
+                                            </div>
+                                        </IonCardContent>
+                                    </IonCard>
+                                </IonCol>
+                            ))}
+                        </IonRow>
+                    </div>
                 </IonGrid>
             </IonContent>
             <IonFooter>

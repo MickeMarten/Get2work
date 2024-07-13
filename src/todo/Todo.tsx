@@ -10,6 +10,7 @@ import { useAuth } from '../auth/authContext';
 import { useHistory } from "react-router-dom";
 import { ITodo } from '../models/models';
 import { getAuth, signOut } from "firebase/auth";
+import { DateTime } from "luxon";
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
@@ -22,6 +23,8 @@ function Todo() {
     const [warningText, setWarningText] = useState<string>('')
     const { currentUser } = useAuth();
     const history = useHistory()
+    const today = DateTime.now().toLocaleString();
+
 
 
     function handleLogout() {
@@ -42,13 +45,14 @@ function Todo() {
         const dbTodoRef = collection(db, 'Users', currentUser.uid, 'Todo')
 
         const todoDataSnapshot = await getDocs(dbTodoRef)
-        const todoData = todoDataSnapshot.docs.map(doc => {
+        const todoData = todoDataSnapshot.docs.map<ITodo>(doc => {
 
             const data = doc.data()
             return {
                 todo: data.todo,
+                date: data.date,
                 id: doc.id,
-                date: Date.now()
+
             }
         })
 
@@ -75,6 +79,7 @@ function Todo() {
             const punchClockRef = collection(db, 'Users', currentUser.uid, 'Todo');
             const punchClockEntry = await addDoc(punchClockRef, {
                 todo: task,
+                date: DateTime.now().toLocaleString(),
             })
             console.log(punchClockEntry);
             setTask('');
@@ -98,6 +103,7 @@ function Todo() {
     }
 
     function handleCompleteTask() {
+
         if (taskComplete === false) {
             setTaskComplete(true);
             setTaskCount(prevCount => prevCount + 1);
@@ -110,22 +116,22 @@ function Todo() {
     return (
         <IonPage>
             <IonHeader>
-                <IonToolbar>
+                <IonToolbar color='secondary'>
                     <IonButtons>
                         <IonBackButton defaultHref='/punchclock'></IonBackButton>
                     </IonButtons>
-                    <IonTitle>Todo</IonTitle>
+                    <IonTitle className='text-center mb-3'>Todo {today}</IonTitle>
                 </IonToolbar>
             </IonHeader>
-            <IonContent>
-                <div className='flex flex-col gap-10'>
+            <IonContent color=''>
+                <div className='flex flex-col mt-4 gap-5'>
                     <IonInput
-                        className=''
+                        className=' w-52 ml-2'
                         type="text"
-                        fill="solid"
+                        fill="outline"
                         label="Skriv en uppgift"
                         labelPlacement="floating"
-                        placeholder="Skriv en uppgift"
+                        placeholder="Kasta soppor"
                         errorText={warningText}
                         onIonInput={handleSetTask}
                     >
@@ -135,8 +141,8 @@ function Todo() {
                     <IonList>
                         {taskList.map((task) => (
                             <IonItem key={task.id}>
-                                <IonLabel onClick={() => handleCompleteTask}>
-                                    <div className={taskComplete ? 'line-through' : ''}>
+                                <IonLabel onClick={() => handleCompleteTask()}>
+                                    <div className={taskComplete ? 'line-through' : ' animate-pulse'}>
                                         {task.todo}
                                     </div>
 
