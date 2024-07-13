@@ -19,7 +19,6 @@ function Todo() {
     const [task, setTask] = useState<string>('')
     const [taskList, setTaskList] = useState<ITodo[]>([])
     let [taskCount, setTaskCount] = useState<number>(0)
-    // const [taskComplete, setTaskComplete] = useState<boolean>(false)
     const [warningText, setWarningText] = useState<string>('')
     const { currentUser } = useAuth();
     const history = useHistory()
@@ -46,9 +45,7 @@ function Todo() {
             setTimeout(() => {
                 setWarningText('');
             }, 2000);
-            return;
         } else {
-
             const punchClockRef = collection(db, 'Users', currentUser.uid, 'Todo');
             const punchClockEntry = await addDoc(punchClockRef, {
                 todo: task,
@@ -56,7 +53,6 @@ function Todo() {
                 taskCompleted: false,
 
             })
-            setTask('');
             getTasks();
         }
 
@@ -83,10 +79,13 @@ function Todo() {
             }
         })
 
+        const completedData = todoData.filter((completed) => completed.taskCompleted === true).length
+        setTaskCount(completedData);
         setTaskList(todoData)
     }
 
     useEffect(() => {
+
         getTasks()
     }, [])
 
@@ -143,11 +142,13 @@ function Todo() {
                         labelPlacement="floating"
                         placeholder="Kasta soppor"
                         errorText={warningText}
-                        onIonInput={handleSetTask}
+                        clearOnEdit={true}
+                        autocorrect='on'
+                        onIonInput={(e) => handleSetTask(e)}
                     >
                     </IonInput>
-                    <IonButton onClick={addTask}>Lägg till</IonButton>
-                    <IonLabel color='warning'>{warningText}</IonLabel>
+                    <IonButton onClick={() => addTask()}>Lägg till</IonButton>
+                    <IonLabel className='text-center animate-pulse text-red-400'>{warningText}</IonLabel>
                     <IonList>
                         {taskList.map((task) => (
                             <IonItem key={task.id}>
@@ -167,7 +168,7 @@ function Todo() {
                             </IonItem>
                         ))}
                     </IonList>
-                    <IonLabel> Uppgifter utförda: {taskCount}</IonLabel>
+                    <IonLabel className='ml-2'> Uppgifter utförda: {taskCount}</IonLabel>
                 </div>
             </IonContent>
             <IonToolbar color='secondary'>
