@@ -78,7 +78,7 @@ function Todo() {
                 todo: data.todo,
                 date: data.date,
                 id: doc.id,
-                taskCompleted: data.taskCompleted
+                taskCompleted: data.taskCompleted,
 
             }
         })
