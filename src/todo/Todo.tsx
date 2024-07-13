@@ -18,8 +18,8 @@ const auth = getAuth();
 function Todo() {
     const [task, setTask] = useState<string>('')
     const [taskList, setTaskList] = useState<ITodo[]>([])
-    const [taskCount, setTaskCount] = useState<number>(0)
-    const [taskComplete, setTaskComplete] = useState<boolean>(false)
+    let [taskCount, setTaskCount] = useState<number>(0)
+    // const [taskComplete, setTaskComplete] = useState<boolean>(false)
     const [warningText, setWarningText] = useState<string>('')
     const { currentUser } = useAuth();
     const history = useHistory()
@@ -53,10 +53,9 @@ function Todo() {
             const punchClockEntry = await addDoc(punchClockRef, {
                 todo: task,
                 date: DateTime.now().toLocaleString(),
-                completed: false,
+                taskCompleted: false,
 
             })
-            console.log(punchClockEntry);
             setTask('');
             getTasks();
         }
@@ -79,13 +78,12 @@ function Todo() {
                 todo: data.todo,
                 date: data.date,
                 id: doc.id,
-                completed: data.completed
+                taskCompleted: data.taskCompleted
 
             }
         })
 
         setTaskList(todoData)
-        console.log(todoData, taskList)
     }
 
     useEffect(() => {
@@ -106,23 +104,24 @@ function Todo() {
         getTasks();
     }
 
-    async function handleCompleteTask(id: string) {
+    async function handleCompleteTask(task: ITodo) {
         if (!currentUser)
             return;
-        const dbTodoRef = doc(db, 'Users', currentUser.uid, 'Todo', id);
+        const dbTodoRef = doc(db, 'Users', currentUser.uid, 'Todo', task.id);
         await updateDoc(dbTodoRef, {
-            completed:
-        })
+            taskCompleted: !task.taskCompleted
+        });
+        const tempList = [...taskList]
+        const todoToChange = tempList.find((tempTask) => tempTask.id === task.id)
+        if (!todoToChange) return;
+        todoToChange.taskCompleted = !todoToChange?.taskCompleted;
+        setTaskList(tempList)
+        const completedTaskCount = tempList.filter((task) => task.taskCompleted === true).length;
+        setTaskCount(completedTaskCount);
 
 
-        // if (taskComplete === false) {
-        //     setTaskComplete(true);
-        //     setTaskCount(prevCount => prevCount + 1);
-        // } else {
-        //     setTaskComplete(false);
-        //     setTaskCount(prevCount => prevCount - 1);
-        // }
     }
+
 
     return (
         <IonPage>
@@ -152,8 +151,8 @@ function Todo() {
                     <IonList>
                         {taskList.map((task) => (
                             <IonItem key={task.id}>
-                                <IonLabel onClick={() => handleCompleteTask()}>
-                                    <div className={taskComplete ? 'line-through' : ' animate-pulse'}>
+                                <IonLabel onClick={() => handleCompleteTask(task)}>
+                                    <div className={task.taskCompleted ? 'line-through' : ' animate-pulse'}>
                                         {task.todo}
                                     </div>
 
