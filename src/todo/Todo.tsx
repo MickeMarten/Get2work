@@ -53,6 +53,7 @@ function Todo() {
                 taskCompleted: false,
 
             })
+            console.log(punchClockEntry);
             getTasks();
         }
 
@@ -135,13 +136,12 @@ function Todo() {
             <IonContent color=''>
                 <div className='flex flex-col mt-4 gap-5'>
                     <IonInput
-                        className=' w-52 ml-2 text-xl'
+                        className=' w-52 ml-2 font-bold'
                         type="text"
                         fill="outline"
                         label="Skriv en uppgift"
                         labelPlacement="floating"
                         placeholder="Kasta soppor"
-                        errorText={warningText}
                         clearOnEdit={true}
                         autocorrect='on'
                         onIonInput={(e) => handleSetTask(e)}
